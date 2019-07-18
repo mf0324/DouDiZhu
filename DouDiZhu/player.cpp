@@ -294,6 +294,7 @@ int Player::ValueToNum(set<int> &cardscopy, int value)
 		return 53;
 	}
 	else{
+		//i 是牌的偏移  j 是循环
 		for (int i = (value - 3) * 4, j = 0; j < 4; ++j){
 			if (cardscopy.find(i + j) != cardscopy.end()){
 				cardscopy.erase(i + j);
@@ -329,11 +330,13 @@ void Player::DivideIntoGroups(void)
 		return;
 
 	set<int> cardscopy(cards);//手牌副本
-	map<int, int> needanalyse;//方便分析的权值-数量集合
-
+	map<int, int> needanalyse;//记录牌的张数 例如 3 的张数 4 的张数  方便分析的权值-数量集合
+	
 	for (auto mem : cardscopy)
 		++needanalyse[CardGroup::Translate(mem)];//根据手牌构造待分析集合
 
+	
+	//将王炸加入牌型集合
 	if (needanalyse.find(16) != needanalyse.end() &&
 		needanalyse.find(17) != needanalyse.end()){//满足条件存在王炸
 		CardGroup *c = new CardGroup(Bomb, 17);
@@ -344,6 +347,7 @@ void Player::DivideIntoGroups(void)
 		analyse.push_back(c);
 	}
 
+	//将炸弹加如牌型集合
 	for (auto mem : needanalyse){
 		if (mem.second == 4){	//炸弹
 			CardGroup *c = new CardGroup(Bomb, mem.first);
@@ -357,7 +361,7 @@ void Player::DivideIntoGroups(void)
 	//删除分析堆中数量为零的元素
 	FreshenMap(needanalyse);
 
-	//提前处理2
+	//提前处理2 将2加入到牌型队列中
 	if (needanalyse.find(15) != needanalyse.end()){
 		CardGroup *c = new CardGroup(Unkown, 15);
 		int n = needanalyse[15];
@@ -377,20 +381,31 @@ void Player::DivideIntoGroups(void)
 		needanalyse.erase(15);
 		analyse.push_back(c);
 	}
+
 	//查找单顺
 	int begin, n;
-	bool exist = true;
-	while (exist && needanalyse.size()){
+	if (needanalyse.size() > 5){
 		begin = n = 0;
-		for (auto b = needanalyse.begin(); b != needanalyse.end(); ++b){
-			if (b->second > 0){//跳过为零的元素
-				if (!begin)
-					begin = b->first;
-				if (begin == b->first)
+		auto b = needanalyse.begin();
+		for (; b != needanalyse.end(); ++b){
+			if (b->second > 0){
+				if (begin == b->first) {
 					++n;
-				++begin;
+					++begin;
+				} else {
+					begin = b->first + 1;
+					n = 1;
+				}
 			}
-			if (n == 5){//满足组成单顺的数量
+			else
+			{
+				b = needanalyse.erase(b);
+				begin = n = 0;
+				continue;
+			}
+
+			//满足组成单顺的数量
+			if (n == 5){
 				auto p = b;
 				int first = p->first - 4;//单顺的第一个
 				CardGroup *c = new CardGroup(SingleSeq, p->first);
@@ -399,22 +414,11 @@ void Player::DivideIntoGroups(void)
 					--needanalyse[first];//减一
 				}
 				analyse.push_back(c);
-				exist = true;
-				break;//从开始重新查找
+				
+				//重新走循环进行查找
+				b = needanalyse.begin();
+				begin = n = 0;
 			}
-			//连续牌面数量小于五个，重新计数；或者已到集合最后数量仍不满足
-			auto end = needanalyse.end();
-			if (begin - 1 != b->first || b == --end){
-				if (b->second > 0){
-					begin = b->first;
-					++begin;
-					n = 1;
-				}
-				else
-					begin = n = 0;
-				exist = false;
-			}
-
 		}
 	}
 

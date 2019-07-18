@@ -229,9 +229,11 @@ void Game::SendLandlordCard()
 //出牌
 void Game::Discard()
 {
-	if (lastone == curplayer){//该玩家出牌没人压死，新一轮出牌
+	//该玩家出牌没人压死，新一轮出牌
+	if (lastone == curplayer){
 		lastone = nullptr;
-		for (int i = 0; i < 3; ++i){//清空出牌区
+		//清空出牌区
+		for (int i = 0; i < 3; ++i){
 			player[i]->discard.Clear();
 			player[i]->nodiscard = false;
 		}

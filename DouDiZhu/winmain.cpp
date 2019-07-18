@@ -110,18 +110,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		KillTimer(hwnd, 1);
 		switch (game.GetStatus()){
 		case NOTSTART:
+			//游戏开始
 			game.GameStart();
 			break;
 		case GETLANDLORD:
+			//叫地主
 			game.GetLandlord();
 			break;
 		case SENDLANDLORDCARD:
+			//发地址牌
 			game.SendLandlordCard();
 			break;
 		case DISCARD:
+			//出牌
 			game.Discard();
 			break;
 		case GAMEOVER:
+			//游戏结束
 			game.GameOver();
 			break;
 		}
@@ -132,18 +137,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case Score1:
 		case Score2:
 		case Score3:
+			//我叫分
 			scene.HideQuestionBtn();
 			game.SendScore(wParam - 1);
 			break;
 		case Discard:
+			//我出牌
 			//scene.HideDiscardBtn();
 			game.Discard();
 			break;
 		case Pass:
+			//我选择过
 			scene.HideDiscardBtn();
 			game.Pass();
 			break;
 		case Hint:
+			//我选择提示
 			game.Hint();
 			break;
 		}
