@@ -424,7 +424,7 @@ void Player::DivideIntoGroups(void)
 
 	//删除分析堆中数量为零的元素
 	FreshenMap(needanalyse);
-	//如可能，继续往单顺中添加剩余牌
+	//如可能，继续往单顺中添加剩余牌  只有可能往上增长
 	for (auto mem : analyse){
 		if (mem->type == SingleSeq){//针对每个单顺
 			for (auto m : needanalyse){
